@@ -1,0 +1,67 @@
+#include <stdio.h>
+#define N 8
+#include <time.h>
+int solve1(int x, int y, int move, int sol[N][N],
+int xM[], int yM[]);
+int isSafe(int x, int y, int sol[N][N])
+{
+return (x >= 0 && x < N && y >= 0 && y < N
+&& sol[x][y] == -1);
+}
+void printSol(int sol[N][N])
+{
+for (int x = 0; x < N; x++) {
+for (int y = 0; y < N; y++)
+printf(" %2d ", sol[x][y]);
+printf("\n");
+}
+}
+int solve()
+{
+int sol[N][N];
+for (int x = 0; x < N; x++)
+for (int y = 0; y < N; y++)
+sol[x][y] = -1;
+int xM[8] = { 2, 1, -1, -2, -2, -1, 1, 2 };
+int yM[8] = { 1, 2, 2, 1, -1, -2, -2, -1 };
+sol[0][0] = 0;
+if (solve1(0, 0, 1, sol, xM, yM) == 0) {
+printf("Solution does not exist");
+return 0;
+}
+else
+printSol(sol);
+return 1;
+}
+int solve1(int x, int y, int move, int sol[N][N],
+int xM[N], int yM[N])
+{
+int k, nextX, nextY;
+if (move == N * N)
+return 1;
+for (k = 0; k < 8; k++) {
+nextX = x + xM[k];
+nextY = y + yM[k];
+if (isSafe(nextX, nextY, sol)) {
+sol[nextX][nextY] = move;
+if (solve1(nextX, nextY, move + 1, sol,
+xM, yM)
+== 1)
+return 1;
+else
+sol[nextX][nextY] = -1; // backtracking
+}
+}
+return 0;
+}
+int main()
+{
+struct timespec start, end;
+clock_gettime(CLOCK_REALTIME, &start);
+solve();
+clock_gettime(CLOCK_REALTIME, &end);
+double time_spent = (end.tv_sec - start.tv_sec) +(end.tv_nsec - start.tv_n
+sec) / 1000000000.0;
+printf("\nThe elapsed time is %f seconds\n", time_spent);
+return 0;
+}
