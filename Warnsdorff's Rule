@@ -1,0 +1,104 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+static int cx[] = {1,1,2,2,-1,-1,-2,-2};
+static int cy[] = {2,-2,1,-1,2,-2,1,-1};
+int limits(int x,int y,int N)
+{
+return (( x>=0 && y>=0) && x<N && y<N)?1:0;
+}
+int isEmpty(int a[],int x,int y,int N)
+{
+return (limits(x,y,N))&&(a[y*N+x]<0)?1:0;
+}
+int getDegree(int a[],int x,int y,int N)
+{
+int count = 0;
+for (int i=0;i<N;i++)
+{
+if(isEmpty(a,(x+cx[i]),(y+cy[i]),N)) count++;
+}
+return count;
+}
+int nextMove(int a[],int *x,int *y,int N)
+{
+int min_deg_index=-1,c,min_deg=(N+1),nx,ny;
+int start=rand()%N;
+//Try all N adjacent of (*x, *y) starting from a random adjacent. Find the
+adjacent with the minimum degree.
+for(int count=0;count<N;++count)
+{
+int i=(start+count)%8;
+nx= *x+cx[i];
+ny= *y+cy[i];
+if ((isEmpty(a, nx, ny,N)) && (c = getDegree(a, nx, ny,N)) < min_deg)
+{
+min_deg_index = i;
+min_deg = c;
+}
+}
+if(min_deg_index==-1) return 0;
+nx = *x + cx[min_deg_index];
+ny = *y + cy[min_deg_index];
+a[ny*N + nx] = a[(*y)*N + (*x)]+1; // Mark next move
+// Update next point
+*x = nx;
+*y = ny;
+return 1;
+}
+void print(int a[],int N)
+{
+for (int i = 0; i < N; ++i)
+{
+for (int j = 0; j < N; ++j)
+printf("%d\t",a[j*N+i]);
+printf("\n");
+}
+}
+int neighbour(int x, int y, int xx, int yy,int N)
+{
+for (int i = 0; i < N; ++i)
+if (((x+cx[i]) == xx)&&((y + cy[i]) == yy))
+return 1;
+return 0;
+}
+int findClosedTour(int sx,int sy,int N)
+{
+int a[N*N];
+for (int i = 0; i< N*N; ++i)// Filling up the chessboard matrix with -1's
+a[i] = -1;
+int x = sx, y = sy;// Current points are same as initial points
+a[y*N+x] = 1; // Mark first move.
+for (int i = 0; i < N*N-1; ++i)// Keep picking next points using Warnsdorff's
+heuristic
+if (nextMove(a, &x, &y,N) == 0)
+return 0;
+if (N<=20 && neighbour(x, y, sx, sy,N)==0)
+return 0;
+print(a,N);
+return 1;
+}
+int main()
+{
+while(1){
+int sx,sy;
+const int N;
+printf("\n**********************Enter board
+size**********************\n");
+scanf("%d",&N);
+printf("Enter starting x coordinate and y coordinate ");
+scanf("%d%d",&sx,&sy);
+struct timespec start, end;
+clock_gettime(CLOCK_REALTIME, &start);
+if(limits(sx,sy,N)==1)
+{
+while (findClosedTour(sx,sy,N)!=1){;}// While we don't get a solution
+}
+else printf("Index out of size");
+clock_gettime(CLOCK_REALTIME, &end);
+double time_spent = (end.tv_sec - start.tv_sec) +(end.tv_nsec - start.tv_nsec)
+/ 1000000000.0;
+printf("\nThe elapsed time is %f seconds\n", time_spent);
+}
+return 0;
+}
